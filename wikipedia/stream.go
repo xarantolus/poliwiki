@@ -21,13 +21,13 @@ func StreamEdits(filterFunc func(title string) bool) <-chan Event {
 		)
 
 		for {
-			log.Println("[StreamEdits]: Connecting...")
+			log.Println("[StreamEdits] Connecting...")
 
 			err := populateStreamEdits(filterFunc, resultChannel, func() {
-				log.Println("[StreamEdits]: Connected, processing events")
+				log.Println("[StreamEdits] Connected, processing events")
 			})
 			if err != nil {
-				log.Printf("[StreamEdits]: %s\n", err.Error())
+				log.Printf("[StreamEdits] %s\n", err.Error())
 			}
 
 			if time.Since(lastErrorTime) < 5*time.Minute {
@@ -44,7 +44,7 @@ func StreamEdits(filterFunc func(title string) bool) <-chan Event {
 				waitTime = 5 * time.Minute
 			}
 
-			log.Printf("[StreamEdits]: Waiting %s before reconnect...\n", waitTime)
+			log.Printf("[StreamEdits] Waiting %s before reconnect...\n", waitTime)
 			time.Sleep(waitTime)
 		}
 	}()

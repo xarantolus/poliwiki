@@ -8,6 +8,7 @@ import (
 )
 
 // Select all politicians, aka people with a abgeordnetenwatch.de id (P5355)
+// You can edit this using https://query.wikidata.org/
 const (
 	poliquery = `SELECT DISTINCT ?item ?page_title ?article_url ?name WHERE {
   ?item wdt:P5355 ?value;
@@ -28,7 +29,7 @@ var c = http.Client{
 }
 
 // Politicians returns a politicians store that contains all politicians that have an abgeordnetenwatch.de ID assigned to them on WikiData
-func Politicians() (store PoliStore, err error) {
+func Politicians() (store PoliticianStore, err error) {
 	var queryURL = queryURLPrefix + url.QueryEscape(poliquery)
 
 	resp, err := c.Get(queryURL)
@@ -44,7 +45,7 @@ func Politicians() (store PoliStore, err error) {
 		return
 	}
 
-	store = PoliStore{
+	store = PoliticianStore{
 		politicians: make(map[string]Politician, len(data.Results.Bindings)),
 	}
 

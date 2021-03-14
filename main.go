@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"log"
 	"x/config"
+	"x/twitter"
 	"x/wikidata"
 	"x/wikipedia"
-
-	"github.com/dghubble/go-twitter/twitter"
-	"github.com/dghubble/oauth1"
 )
 
 var (
@@ -24,41 +22,32 @@ func main() {
 		panic("parsing configuration file: " + err.Error())
 	}
 
-	log.Println("Fetching politicians...")
+	log.Println("[Startup] Fetching politicians...")
 
-	polis, err := wikidata.Politicians()
+	poliStore, err := wikidata.Politicians()
 	if err != nil {
 		panic("fetching politicians: " + err.Error())
 	}
 
-	var client *twitter.Client
-	{
-		config := oauth1.NewConfig(cfg.Twitter.APIKey, cfg.Twitter.APISecretKey)
-		token := oauth1.NewToken(cfg.Twitter.AccessToken, cfg.Twitter.AccessTokenSecret)
-		httpClient := config.Client(oauth1.NoContext, token)
-
-		client = twitter.NewClient(httpClient)
-
-		selfUser, _, err := client.Accounts.VerifyCredentials(&twitter.AccountVerifyParams{})
-		if err != nil {
-			log.Fatalln("cannot log in with given credentials: " + err.Error())
-		}
-
-		log.Printf("[Twitter]: Logged in @%s\n", selfUser.ScreenName)
-	}
-
-	t, _, err := client.Statuses.Update("This is a test tweet", nil)
+	client, user, err := twitter.Login(cfg)
 	if err != nil {
-		panic(err)
+		panic("logging in to twitter: " + err.Error())
 	}
+	log.Printf("[Twitter] Logged in @%s\n", user.ScreenName)
 
-	fmt.Println(t.IDStr)
-
-	log.Println("Start streaming edits...")
-
-	events := wikipedia.StreamEdits(polis.Contains)
+	// Receive edit events and only return edits on sites of politicians
+	events := wikipedia.StreamEdits(poliStore.Contains)
 
 	for edit := range events {
 		fmt.Printf("%#v\n", edit)
+
+		// TODO
+		t, _, err := client.Statuses.Update("", nil)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		fmt.Printf("Tweeted https://twitter.com/%s/%s\n", user.ScreenName, t.IDStr)
 	}
 }
