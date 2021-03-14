@@ -9,9 +9,10 @@ import (
 )
 
 // StreamEdits returns all edits made to the german wiki for that filterFunc returns true.
-// FilterFunc should return true if the article with the given title should be sent to events
+// filterFunc gets the title of the article to make that decision
 func StreamEdits(filterFunc func(title string) bool) <-chan Event {
-	var resultChannel = make(chan Event, 250)
+	// Buffer of 25 should be more than enough
+	var resultChannel = make(chan Event, 25)
 
 	go func() {
 		var (
