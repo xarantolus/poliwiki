@@ -4,10 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"x/bot"
 	"x/config"
-	"x/twitter"
 	"x/wikidata"
 	"x/wikipedia"
+
+	"github.com/dghubble/go-twitter/twitter"
 )
 
 var (
@@ -29,7 +31,7 @@ func main() {
 		panic("fetching politicians: " + err.Error())
 	}
 
-	client, user, err := twitter.Login(cfg)
+	client, user, err := bot.Login(cfg)
 	if err != nil {
 		panic("logging in to twitter: " + err.Error())
 	}
@@ -42,7 +44,7 @@ func main() {
 		fmt.Printf("%#v\n", edit)
 
 		// TODO
-		t, _, err := client.Statuses.Update("", nil)
+		t, _, err := client.Statuses.Update("", &twitter.StatusUpdateParams{})
 		if err != nil {
 			log.Println(err)
 			continue

@@ -1,4 +1,4 @@
-package twitter
+package bot
 
 import (
 	"x/config"
