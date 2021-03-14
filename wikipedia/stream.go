@@ -38,7 +38,12 @@ func StreamEdits(filterFunc func(title string) bool) <-chan Event {
 
 			lastErrorTime = time.Now()
 
+			// Set wait time depending on how many fails there were, but reconnect within 5 minutes
 			waitTime := time.Duration(backoff) * time.Second
+			if waitTime > 5*time.Minute {
+				waitTime = 5 * time.Minute
+			}
+
 			log.Printf("[StreamEdits]: Waiting %s before reconnect...\n", waitTime)
 			time.Sleep(waitTime)
 		}
