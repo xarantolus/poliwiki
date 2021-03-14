@@ -16,3 +16,8 @@ func (s *PoliStore) Get(pageTitle string) (p Politician, ok bool) {
 	p, ok = s.politicians[pageTitle]
 	return
 }
+
+func (s *PoliStore) Contains(pageTitle string) (ok bool) {
+	_, ok = s.politicians[pageTitle]
+	return
+}

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"x/wikidata"
+	"x/wikipedia"
 )
 
 func main() {
@@ -10,5 +11,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(polis.Get("Angela Merkel"))
+
+	events := wikipedia.StreamEdits(polis.Contains)
+
+	for edit := range events {
+		fmt.Printf("%#v\n", edit)
+	}
 }
