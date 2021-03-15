@@ -66,7 +66,7 @@ func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 					Y:      math.Round(box.Margin[1]),
 					Width:  float64(box.Width),
 					Height: float64(box.Height),
-					Scale:  4,
+					Scale:  2,
 				}).Do(ctx)
 			if err != nil {
 				return err

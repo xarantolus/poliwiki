@@ -32,6 +32,8 @@ func main() {
 		panic("fetching politicians: " + err.Error())
 	}
 
+	log.Printf("[Startup] Got info about %d politicians\n", poliStore.Len())
+
 	client, user, err := bot.Login(cfg)
 	if err != nil {
 		panic("logging in to twitter: " + err.Error())
@@ -63,7 +65,7 @@ func main() {
 		}
 
 		// TODO: generate text
-		t, _, err := client.Statuses.Update("", &twitter.StatusUpdateParams{
+		t, _, err := client.Statuses.Update(diffURL, &twitter.StatusUpdateParams{
 			MediaIds: []int64{media.MediaID},
 		})
 		if err != nil {
@@ -71,6 +73,6 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("Tweeted https://twitter.com/%s/%s\n", user.ScreenName, t.IDStr)
+		fmt.Printf("Tweeted https://twitter.com/%s/status/%s\n", user.ScreenName, t.IDStr)
 	}
 }

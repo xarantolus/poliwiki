@@ -21,3 +21,7 @@ func (s *PoliticianStore) Contains(pageTitle string) (ok bool) {
 	_, ok = s.politicians[pageTitle]
 	return
 }
+
+func (s *PoliticianStore) Len() int {
+	return len(s.politicians)
+}
