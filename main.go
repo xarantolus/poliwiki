@@ -6,6 +6,7 @@ import (
 	"log"
 	"x/bot"
 	"x/config"
+	"x/screenshot"
 	"x/wikidata"
 	"x/wikipedia"
 
@@ -43,10 +44,30 @@ func main() {
 	for edit := range events {
 		fmt.Printf("%#v\n", edit)
 
-		// TODO
-		t, _, err := client.Statuses.Update("", &twitter.StatusUpdateParams{})
+		diffURL, ok := edit.DiffURL()
+		if !ok {
+			log.Printf("Couldn't generate diff URL for edit %#v\n", edit)
+			continue
+		}
+
+		png, err := screenshot.Take(diffURL)
 		if err != nil {
-			log.Println(err)
+			log.Printf("Error while taking screenshot: %s\n", err.Error())
+			continue
+		}
+
+		media, _, err := client.Media.Upload(png, "image/png")
+		if err != nil {
+			log.Printf("Error while uploading image: %s\n", err.Error())
+			continue
+		}
+
+		// TODO: generate text
+		t, _, err := client.Statuses.Update("", &twitter.StatusUpdateParams{
+			MediaIds: []int64{media.MediaID},
+		})
+		if err != nil {
+			log.Printf("Error while tweeting: %s\n", err.Error())
 			continue
 		}
 
