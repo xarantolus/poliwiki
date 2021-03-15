@@ -10,7 +10,7 @@ type Event struct {
 	Type string `json:"type"`
 
 	Meta struct {
-		URL string `json:"url"`
+		URI string `json:"uri"`
 	} `json:"meta"`
 
 	// Article title
@@ -35,7 +35,7 @@ type Event struct {
 }
 
 func (e *Event) DiffURL() (us string, ok bool) {
-	pageSlug := path.Base(e.Meta.URL)
+	pageSlug := path.Base(e.Meta.URI)
 	if pageSlug == "" {
 		return
 	}
@@ -46,10 +46,14 @@ func (e *Event) DiffURL() (us string, ok bool) {
 		Path:   "/w/index.php",
 	}
 
-	u.Query().Set("title", pageSlug)
-	u.Query().Set("diff", strconv.Itoa(e.Revision.New))
-	u.Query().Set("oldid", strconv.Itoa(e.Revision.Old))
-	u.Query().Set("diffonly", "yes")
+	var q = make(url.Values, 4)
+
+	q.Set("title", pageSlug)
+	q.Set("diff", strconv.Itoa(e.Revision.New))
+	q.Set("oldid", strconv.Itoa(e.Revision.Old))
+	q.Set("diffonly", "yes")
+
+	u.RawQuery = q.Encode()
 
 	return u.String(), true
 }
