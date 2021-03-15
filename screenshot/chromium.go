@@ -17,9 +17,8 @@ func Take(webpage string) (pngData []byte, err error) {
 	ctx, c := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer c()
 
-	ctx, cc := chromedp.NewExecAllocator(ctx, chromedp.WindowSize(1920, 1080), chromedp.Headless)
+	ctx, cc := chromedp.NewExecAllocator(ctx)
 	defer cc()
-
 	// create context
 	ctx, ccc := chromedp.NewContext(ctx)
 	defer ccc()
@@ -39,6 +38,8 @@ func Take(webpage string) (pngData []byte, err error) {
 // see https://github.com/chromedp/examples/blob/master/screenshot/main.go
 func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 	return chromedp.Tasks{
+		// If the viewport height is too small, the lower part of the page is cut off
+		chromedp.EmulateViewport(1800, 1080*4),
 		chromedp.Navigate(urlstr),
 		chromedp.QueryAfter(sel, func(ctx context.Context, execCtx runtime.ExecutionContextID, nodes ...*cdp.Node) error {
 			if len(nodes) < 1 {
@@ -46,7 +47,7 @@ func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 			}
 
 			// get box model
-			box, err := dom.GetBoxModel().WithNodeID(nodes[0].NodeID).Do(ctx)
+			box, err := dom.GetBoxModel().WithBackendNodeID(nodes[0].BackendNodeID).Do(ctx)
 			if err != nil {
 				return err
 			}
@@ -63,8 +64,8 @@ func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 					// lose one pixel in either dimension.
 					X:      math.Round(box.Margin[0]),
 					Y:      math.Round(box.Margin[1]),
-					Width:  math.Round(box.Margin[4] - box.Margin[0]),
-					Height: math.Round(box.Margin[5] - box.Margin[1]),
+					Width:  float64(box.Width),
+					Height: float64(box.Height),
 					Scale:  4,
 				}).Do(ctx)
 			if err != nil {
