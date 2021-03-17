@@ -34,6 +34,12 @@ type Event struct {
 	Wiki string `json:"wiki"`
 }
 
+type Revision struct {
+	Old int `json:"old"`
+	New int `json:"new"`
+}
+
+// DiffURL returns the URL for seeing the difference between two versions of an article
 func (e *Event) DiffURL() (us string, ok bool) {
 	pageSlug := path.Base(e.Meta.URI)
 	if pageSlug == "" {
@@ -51,14 +57,11 @@ func (e *Event) DiffURL() (us string, ok bool) {
 	q.Set("title", pageSlug)
 	q.Set("diff", strconv.Itoa(e.Revision.New))
 	q.Set("oldid", strconv.Itoa(e.Revision.Old))
+
+	// diffonly removes the article text from the page, no need to load it
 	q.Set("diffonly", "yes")
 
 	u.RawQuery = q.Encode()
 
 	return u.String(), true
-}
-
-type Revision struct {
-	Old int `json:"old"`
-	New int `json:"new"`
 }

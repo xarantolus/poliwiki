@@ -9,12 +9,15 @@ import (
 )
 
 // StreamEdits returns all edits made to the german wiki for that filterFunc returns true.
-// filterFunc gets the title of the article to make that decision
+// filterFunc gets the change event of the article to make that decision.
+// StreamEdits will try to reconnect forever
 func StreamEdits(filterFunc func(event *Event) bool) <-chan Event {
 	// Buffer of 25 should be more than enough
 	var resultChannel = make(chan Event, 25)
 
 	go func() {
+		// When errors happen, we don't reconnect instantly.
+		// We wait for some time, and if we aren't able to reconnect, we wait even longer
 		var (
 			lastErrorTime time.Time
 			backoff       int
@@ -58,6 +61,8 @@ const (
 
 var noTimeoutClient = http.Client{}
 
+// populateStreamEdits streams edits from wikimedia and puts them into the events channel
+// if filterFunc returns true for the event. It calls onConnect when the stream starts
 func populateStreamEdits(filterFunc func(event *Event) bool, events chan<- Event, onConnect func()) (err error) {
 	req, err := http.NewRequest(http.MethodGet, recentChangesURL, nil)
 	if err != nil {
