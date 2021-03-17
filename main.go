@@ -59,7 +59,7 @@ func main() {
 			continue
 		}
 
-		if edit.SizeDifference() < 35 {
+		if edit.SizeDifference() < 50 {
 			log.Println("Skipping small edit", diffURL)
 			continue
 		}
