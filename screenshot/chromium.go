@@ -35,6 +35,10 @@ func Take(webpage string) (pngData []byte, err error) {
 	return
 }
 
+const jsCensorUser = `const sheet = new CSSStyleSheet();
+		sheet.replaceSync(".mw-userlink{color: #000;background: #000;}");
+document.adoptedStyleSheets = [sheet];`
+
 // see https://github.com/chromedp/examples/blob/master/screenshot/main.go
 func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 	return chromedp.Tasks{
@@ -42,6 +46,8 @@ func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 		chromedp.EmulateViewport(1800, 1080*4),
 		chromedp.Navigate(urlstr),
 
+		// Cannot pass nil, but we won't use the returned value
+		chromedp.Evaluate(jsCensorUser, &runtime.RemoteObject{}),
 		// This next is basically a copy of the source code of chromedp.Screenshot, except that the scale
 		// is set to 2 so the text resolution is higher
 		chromedp.QueryAfter(sel, func(ctx context.Context, execCtx runtime.ExecutionContextID, nodes ...*cdp.Node) error {
