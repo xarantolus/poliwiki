@@ -17,7 +17,7 @@ func Take(webpage string) (pngData []byte, err error) {
 	ctx, c := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer c()
 
-	ctx, cc := chromedp.NewExecAllocator(ctx)
+	ctx, cc := chromedp.NewExecAllocator(ctx, chromedp.Headless)
 	defer cc()
 	// create context
 	ctx, ccc := chromedp.NewContext(ctx)
@@ -41,6 +41,9 @@ func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 		// If the viewport height is too small, the lower part of the page is cut off
 		chromedp.EmulateViewport(1800, 1080*4),
 		chromedp.Navigate(urlstr),
+
+		// This next is basically a copy of the source code of chromedp.Screenshot, except that the scale
+		// is set to 2 so the text resolution is higher
 		chromedp.QueryAfter(sel, func(ctx context.Context, execCtx runtime.ExecutionContextID, nodes ...*cdp.Node) error {
 			if len(nodes) < 1 {
 				return fmt.Errorf("selector %q did not return any nodes", sel)
