@@ -35,8 +35,10 @@ func Take(webpage string) (pngData []byte, err error) {
 	return
 }
 
-const jsCensorUser = `const sheet = new CSSStyleSheet();
-		sheet.replaceSync(".mw-userlink{color: #000;background: #000;}");
+// This JS snippet creates a css style that censors the user name text
+const jsCensorUser = `[...document.getElementsByTagName("bdi")].forEach(x => x.innerText="censored");
+const sheet = new CSSStyleSheet();
+sheet.replaceSync("bdi{color: #000 !important;background: #000 !important;}");
 document.adoptedStyleSheets = [sheet];`
 
 // see https://github.com/chromedp/examples/blob/master/screenshot/main.go
