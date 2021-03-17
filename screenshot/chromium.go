@@ -47,7 +47,7 @@ func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 		chromedp.Navigate(urlstr),
 
 		// Cannot pass nil, but we won't use the returned value
-		chromedp.Evaluate(jsCensorUser, &runtime.RemoteObject{}),
+		chromedp.Evaluate(jsCensorUser, &[]byte{}),
 		// This next is basically a copy of the source code of chromedp.Screenshot, except that the scale
 		// is set to 2 so the text resolution is higher
 		chromedp.QueryAfter(sel, func(ctx context.Context, execCtx runtime.ExecutionContextID, nodes ...*cdp.Node) error {

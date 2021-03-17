@@ -61,6 +61,7 @@ func main() {
 			continue
 		}
 
+		log.Println("Taking screenshot of", diffURL)
 		png, err := screenshot.Take(diffURL)
 		if err != nil {
 			log.Printf("Error while taking screenshot: %s\n", err.Error())
