@@ -78,7 +78,7 @@ func main() {
 		case poli.FirstName == "" && poli.LastName != "":
 			nameText = util.Hashtag(poli.LastName)
 		case poli.FirstName != "" && poli.LastName != "":
-			nameText = util.Hashtag(poli.LastName)
+			nameText = poli.FirstName + " " + util.Hashtag(poli.LastName)
 		default:
 			// data doesn't have a last name
 			continue
