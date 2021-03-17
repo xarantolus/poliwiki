@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
 // Select all politicians, aka people with a abgeordnetenwatch.de id (P5355)
 // You can edit this using https://query.wikidata.org/
 const (
-	poliquery = `SELECT DISTINCT ?item ?page_title ?article_url ?name WHERE {
+	poliquery = `SELECT DISTINCT ?item ?page_title ?article_url ?name ?first_name ?last_name WHERE {
   ?item wdt:P5355 ?value;
     wdt:P1559 ?name.
   ?article schema:about ?item;
@@ -18,6 +19,14 @@ const (
     schema:name ?page_title.
   ?article_url schema:about ?item;
     schema:isPartOf <https://de.wikipedia.org/>.
+  OPTIONAL {
+    ?item wdt:P735 ?fval.
+    ?fval wdt:P1705 ?first_name.
+  }
+  OPTIONAL {
+    ?item wdt:P734 ?lval.
+    ?lval wdt:P1705 ?last_name.
+  }
   SERVICE wikibase:label { bd:serviceParam wikibase:language "de". }
 }`
 
@@ -88,12 +97,31 @@ type info struct {
 		Type  string `json:"type"`
 		Value string `json:"value"`
 	} `json:"article_url"`
+	FirstName struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"first_name"`
+	LastName struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"last_name"`
 }
 
 func (i *info) toPoli() Politician {
-	return Politician{
+	var p = Politician{
 		Name:           i.Name.Value,
 		WikiPageTitle:  i.PageTitle.Value,
 		WikiArticleURL: i.ArticleURL.Value,
+		FirstName:      i.FirstName.Value,
+		LastName:       i.LastName.Value,
 	}
+
+	if p.FirstName == "" && p.LastName != "" {
+		p.FirstName = strings.TrimSpace(strings.TrimSuffix(p.Name, p.LastName))
+	}
+	if p.LastName == "" && p.FirstName != "" {
+		p.LastName = strings.TrimSpace(strings.TrimPrefix(p.Name, p.FirstName))
+	}
+
+	return p
 }

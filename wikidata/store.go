@@ -3,6 +3,8 @@ package wikidata
 type Politician struct {
 	Name string
 
+	FirstName, LastName string
+
 	WikiPageTitle  string
 	WikiArticleURL string
 }
