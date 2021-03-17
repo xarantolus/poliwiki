@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"time"
 	"x/bot"
 	"x/config"
 	"x/screenshot"
@@ -45,11 +46,13 @@ func main() {
 		return poliStore.Contains(e.Title)
 	})
 
-	// For detecting if we just tweeted about the same entry
-	var (
-		lastTweetID int64
-		lastTitle   string
-	)
+	type lastInfo struct {
+		TweetID int64
+		Time    time.Time
+	}
+
+	// For detecting if we tweeted about the same entry within the last two hours
+	var lastTweetInfo = make(map[string]lastInfo)
 
 	for edit := range events {
 		fmt.Printf("%#v\n", edit)
@@ -89,17 +92,19 @@ func main() {
 			nameText = util.Hashtag(poli.LastName)
 		case poli.FirstName != "" && poli.LastName != "":
 			nameText = poli.FirstName + " " + util.Hashtag(poli.LastName)
+		case poli.Name != "":
+			nameText = poli.Name
 		default:
-			// data doesn't have a last name
+			// data doesn't have a name, shouldn't really happen?
 			continue
 		}
 
 		var tweetText = fmt.Sprintf("Änderung beim Wiki-Eintrag zu %s\n%s", nameText, diffURL)
 
-		// If the last tweet was about this page, then we should just add it in a thread
+		// If we tweeted about this in the last two hours, add it in a thread
 		var replyID int64
-		if lastTitle == edit.Title {
-			replyID = lastTweetID
+		if li := lastTweetInfo[edit.Title]; time.Since(li.Time) < 2*time.Hour {
+			replyID = li.TweetID
 			tweetText = fmt.Sprintf("Noch eine Änderung bei %s\n%s", nameText, diffURL)
 		}
 
@@ -112,8 +117,11 @@ func main() {
 			continue
 		}
 
-		lastTitle = edit.Title
-		lastTweetID = t.ID
+		// Save this info for the next tweet
+		lastTweetInfo[edit.Title] = lastInfo{
+			TweetID: t.ID,
+			Time:    time.Now(),
+		}
 
 		fmt.Printf("Tweeted https://twitter.com/%s/status/%s\n", user.ScreenName, t.IDStr)
 	}
