@@ -64,6 +64,10 @@ func (e *Event) DiffURL() (us string, ok bool) {
 		return
 	}
 
+	if e.Revision.New == 0 || e.Revision.Old == 0 {
+		return
+	}
+
 	var u = url.URL{
 		Scheme: "https",
 		Host:   "de.wikipedia.org",
