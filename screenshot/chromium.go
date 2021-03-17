@@ -40,7 +40,7 @@ const jsCensorUser = `const sheet = new CSSStyleSheet();
 sheet.replaceSync(".censored{color: #000 !important;background: #000 !important;}");
 document.adoptedStyleSheets = [sheet];
 [...document.querySelector(".diff").querySelectorAll("a[href^=\\/wiki]")]
-.filter(x => x.innerText != "Markierung" && x.innerText != "Diskussion" && x.innerText != "Beiträge")
+.filter(x => ["Visuelle Bearbeitung", "Markierung", "Diskussion", "Beiträge"].indexOf(x.innerText) === -1)
 .forEach(x => { x.innerText="censored"; x.className = "censored"; });`
 
 // see https://github.com/chromedp/examples/blob/master/screenshot/main.go
