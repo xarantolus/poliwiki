@@ -8,6 +8,7 @@ import (
 	"x/bot"
 	"x/config"
 	"x/screenshot"
+	"x/util"
 	"x/wikidata"
 	"x/wikipedia"
 
@@ -49,6 +50,11 @@ func main() {
 	for edit := range events {
 		fmt.Printf("%#v\n", edit)
 
+		poli, ok := poliStore.Get(edit.Title)
+		if !ok {
+			continue
+		}
+
 		diffURL, ok := edit.DiffURL()
 		if !ok {
 			log.Printf("Couldn't generate diff URL for edit %#v\n", edit)
@@ -67,8 +73,20 @@ func main() {
 			continue
 		}
 
-		// TODO: generate text
-		t, _, err := client.Statuses.Update(diffURL, &twitter.StatusUpdateParams{
+		var nameText string
+		switch {
+		case poli.FirstName == "" && poli.LastName != "":
+			nameText = util.Hashtag(poli.LastName)
+		case poli.FirstName != "" && poli.LastName != "":
+			nameText = util.Hashtag(poli.LastName)
+		default:
+			// data doesn't have a last name
+			continue
+		}
+
+		var tweetText = fmt.Sprintf("Änderung beim Wiki-Eintrag von %s\n%s", nameText, diffURL)
+
+		t, _, err := client.Statuses.Update(tweetText, &twitter.StatusUpdateParams{
 			MediaIds: []int64{media.MediaID},
 		})
 		if err != nil {
