@@ -10,7 +10,7 @@ import (
 
 // StreamEdits returns all edits made to the german wiki for that filterFunc returns true.
 // filterFunc gets the title of the article to make that decision
-func StreamEdits(filterFunc func(title string) bool) <-chan Event {
+func StreamEdits(filterFunc func(event *Event) bool) <-chan Event {
 	// Buffer of 25 should be more than enough
 	var resultChannel = make(chan Event, 25)
 
@@ -58,7 +58,7 @@ const (
 
 var noTimeoutClient = http.Client{}
 
-func populateStreamEdits(filterFunc func(title string) bool, events chan<- Event, onConnect func()) (err error) {
+func populateStreamEdits(filterFunc func(event *Event) bool, events chan<- Event, onConnect func()) (err error) {
 	req, err := http.NewRequest(http.MethodGet, recentChangesURL, nil)
 	if err != nil {
 		return
@@ -88,12 +88,13 @@ func populateStreamEdits(filterFunc func(title string) bool, events chan<- Event
 			break
 		}
 
-		// If it's not an edit in the german wiki, we skip it
+		// If it's not an edit in the german wiki, we skip it.
+		// Also skip bot edits and articles without titles (if they even exist?)
 		if event.Bot || event.Type != "edit" || event.Wiki != "dewiki" || event.Title == "" {
 			continue
 		}
 
-		if filterFunc(event.Title) {
+		if filterFunc(event) {
 			events <- *event
 		}
 	}

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"x/bot"
 	"x/config"
 	"x/screenshot"
@@ -40,8 +41,10 @@ func main() {
 	}
 	log.Printf("[Twitter] Logged in @%s\n", user.ScreenName)
 
-	// Receive edit events and only return edits on sites of politicians
-	events := wikipedia.StreamEdits(poliStore.Contains)
+	events := wikipedia.StreamEdits(func(e *wikipedia.Event) bool {
+		// If the article of an politician has been edited by an "anonymous" user (IP adress displayed)
+		return poliStore.Contains(e.Title) && net.ParseIP(e.User) != nil
+	})
 
 	for edit := range events {
 		fmt.Printf("%#v\n", edit)
