@@ -36,10 +36,12 @@ func Take(webpage string) (pngData []byte, err error) {
 }
 
 // This JS snippet creates a css style that censors the user name text
-const jsCensorUser = `[...document.getElementsByTagName("bdi")].forEach(x => x.innerText="censored");
-const sheet = new CSSStyleSheet();
-sheet.replaceSync("bdi{color: #000 !important;background: #000 !important;}");
-document.adoptedStyleSheets = [sheet];`
+const jsCensorUser = `const sheet = new CSSStyleSheet();
+sheet.replaceSync(".censored{color: #000 !important;background: #000 !important;}");
+document.adoptedStyleSheets = [sheet];
+[...document.querySelector(".diff").querySelectorAll("a[href^=\\/wiki]")]
+.filter(x => x.innerText != "Markierung" && x.innerText != "Diskussion" && x.innerText != "Beiträge")
+.forEach(x => { x.innerText="censored"; x.className = "censored"; });`
 
 // see https://github.com/chromedp/examples/blob/master/screenshot/main.go
 func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {

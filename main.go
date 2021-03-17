@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net"
 	"x/bot"
 	"x/config"
 	"x/screenshot"
@@ -43,8 +42,7 @@ func main() {
 	log.Printf("[Twitter] Logged in @%s\n", user.ScreenName)
 
 	events := wikipedia.StreamEdits(func(e *wikipedia.Event) bool {
-		// If the article of an politician has been edited by an "anonymous" user (IP adress displayed)
-		return poliStore.Contains(e.Title) && net.ParseIP(e.User) != nil
+		return poliStore.Contains(e.Title)
 	})
 
 	for edit := range events {
@@ -58,6 +56,11 @@ func main() {
 		diffURL, ok := edit.DiffURL()
 		if !ok {
 			log.Printf("Couldn't generate diff URL for edit %#v\n", edit)
+			continue
+		}
+
+		if edit.SizeDifference() < 35 {
+			log.Println("Skipping small edit", diffURL)
 			continue
 		}
 
@@ -85,7 +88,7 @@ func main() {
 			continue
 		}
 
-		var tweetText = fmt.Sprintf("Änderung beim Wiki-Eintrag von %s\n%s", nameText, diffURL)
+		var tweetText = fmt.Sprintf("Änderung beim Wiki-Eintrag zu %s\n%s", nameText, diffURL)
 
 		t, _, err := client.Statuses.Update(tweetText, &twitter.StatusUpdateParams{
 			MediaIds: []int64{media.MediaID},

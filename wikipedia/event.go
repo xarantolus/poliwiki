@@ -30,13 +30,31 @@ type Event struct {
 	// Contains the old & new ID
 	Revision Revision `json:"revision"`
 
+	// Contains the old & new length of the article
+	Length Length `json:"length"`
+
 	// Wiki name, e.g. "dewiki" or "enwiki"
 	Wiki string `json:"wiki"`
+}
+
+type Length struct {
+	Old int `json:"old"`
+	New int `json:"new"`
 }
 
 type Revision struct {
 	Old int `json:"old"`
 	New int `json:"new"`
+}
+
+func (e *Event) SizeDifference() int {
+	// Need to check if negative because something could be deleted
+	size := e.Length.New - e.Length.Old
+	if size < 0 {
+		size = e.Length.Old - e.Length.New
+	}
+
+	return size
 }
 
 // DiffURL returns the URL for seeing the difference between two versions of an article
