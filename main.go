@@ -45,6 +45,12 @@ func main() {
 		return poliStore.Contains(e.Title)
 	})
 
+	// For detecting if we just tweeted about the same entry
+	var (
+		lastTweetID int64
+		lastTitle   string
+	)
+
 	for edit := range events {
 		fmt.Printf("%#v\n", edit)
 
@@ -90,13 +96,24 @@ func main() {
 
 		var tweetText = fmt.Sprintf("Änderung beim Wiki-Eintrag zu %s\n%s", nameText, diffURL)
 
+		// If the last tweet was about this page, then we should just add it in a thread
+		var replyID int64
+		if lastTitle == edit.Title {
+			replyID = lastTweetID
+			tweetText = fmt.Sprintf("Noch eine Änderung bei %s\n%s", nameText, diffURL)
+		}
+
 		t, _, err := client.Statuses.Update(tweetText, &twitter.StatusUpdateParams{
-			MediaIds: []int64{media.MediaID},
+			MediaIds:          []int64{media.MediaID},
+			InReplyToStatusID: replyID,
 		})
 		if err != nil {
 			log.Printf("Error while tweeting: %s\n", err.Error())
 			continue
 		}
+
+		lastTitle = edit.Title
+		lastTweetID = t.ID
 
 		fmt.Printf("Tweeted https://twitter.com/%s/status/%s\n", user.ScreenName, t.IDStr)
 	}
