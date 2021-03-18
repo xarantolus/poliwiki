@@ -73,6 +73,15 @@ func Politicians() (store PoliticianStore, err error) {
 	for _, result := range data.Results.Bindings {
 		p := result.toPoli()
 
+		_, ok := store.politicians[p.WikiPageTitle]
+		if ok {
+			// Some pages are in there twice because of translations of certain fields.
+			// Some politicians have two names, which results in two rows in the data.
+			// Some are also in there twice because they changed party. It seems like keeping the first record of the data
+			// is the correct way to go, but this might not be true for every politicians.
+			// This should be fixed in the SPARQL query rather than here, but I don't really know how
+			continue
+		}
 		store.politicians[p.WikiPageTitle] = p
 	}
 
