@@ -101,7 +101,7 @@ func main() {
 
 		var partyText = poli.PartyShortname()
 		if partyText != "" {
-			partyText = " " + util.Hashtag(partyText)
+			partyText = ", " + util.Hashtag(partyText)
 		}
 
 		var tweetText = fmt.Sprintf("Änderung beim Wiki-Eintrag zu %s%s\n%s", nameText, partyText, diffURL)
