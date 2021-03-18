@@ -39,7 +39,7 @@ func Take(webpage string) (pngData []byte, err error) {
 const jsCensorUser = `const sheet = new CSSStyleSheet();
 sheet.replaceSync(".censored{color: #000 !important;background: #000 !important;}");
 document.adoptedStyleSheets = [sheet];
-[...document.querySelector(".diff").querySelectorAll("a[href^=\\/wiki]")]
+[...document.querySelectorAll(".mw-userlink"),...document.querySelector(".diff").querySelectorAll("a[href^=\\/wiki]")]
 .filter(x => ["Visuelle Bearbeitung", "Markierung", "Markierungen", "Diskussion", "Beiträge"].indexOf(x.innerText) === -1)
 .forEach(x => { x.innerText="censored"; x.className = "censored"; });`
 
