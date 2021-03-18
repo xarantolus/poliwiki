@@ -99,7 +99,12 @@ func main() {
 			continue
 		}
 
-		var tweetText = fmt.Sprintf("Änderung beim Wiki-Eintrag zu %s\n%s", nameText, diffURL)
+		var partyText = poli.PartyShortname()
+		if partyText != "" {
+			partyText = " " + util.Hashtag(partyText)
+		}
+
+		var tweetText = fmt.Sprintf("Änderung beim Wiki-Eintrag zu %s%s\n%s", nameText, partyText, diffURL)
 
 		// If we tweeted about this in the last two hours, add it in a thread
 		var replyID int64

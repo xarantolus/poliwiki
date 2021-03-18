@@ -11,7 +11,7 @@ import (
 // Select all politicians, aka people with a abgeordnetenwatch.de id (P5355)
 // You can edit this using https://query.wikidata.org/
 const (
-	poliquery = `SELECT DISTINCT ?item ?page_title ?article_url ?name ?first_name ?last_name WHERE {
+	poliquery = `SELECT DISTINCT ?item ?page_title ?article_url ?name ?first_name ?last_name ?partyHashtag ?partyTwittername ?partyShortname WHERE {
   ?item wdt:P5355 ?value;
     wdt:P1559 ?name.
   ?article schema:about ?item;
@@ -26,6 +26,18 @@ const (
   OPTIONAL {
     ?item wdt:P734 ?lval.
     ?lval wdt:P1705 ?last_name.
+  }
+  OPTIONAL {
+    ?item wdt:P102 ?pval.
+    ?pval wdt:P2572 ?partyHashtag.
+  }
+  OPTIONAL {
+    ?item wdt:P102 ?pval.
+    ?pval wdt:P2002 ?partyTwittername.
+  }
+  OPTIONAL {
+    ?item wdt:P102 ?pval.
+    ?pval wdt:P1813 ?partyShortname.
   }
   SERVICE wikibase:label { bd:serviceParam wikibase:language "de". }
 }`
@@ -105,22 +117,43 @@ type info struct {
 		Type  string `json:"type"`
 		Value string `json:"value"`
 	} `json:"last_name"`
+	PartyHashtag struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"partyHashtag"`
+	PartyTwittername struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"partyTwittername"`
+	PartyShortname struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"partyShortname"`
 }
 
 func (i *info) toPoli() Politician {
 	var p = Politician{
-		Name:           i.Name.Value,
-		WikiPageTitle:  i.PageTitle.Value,
-		WikiArticleURL: i.ArticleURL.Value,
-		FirstName:      i.FirstName.Value,
-		LastName:       i.LastName.Value,
+		Name:             i.Name.Value,
+		WikiPageTitle:    i.PageTitle.Value,
+		WikiArticleURL:   i.ArticleURL.Value,
+		FirstName:        i.FirstName.Value,
+		LastName:         i.LastName.Value,
+		partyHashtag:     i.PartyHashtag.Value,
+		partyShortname:   i.PartyShortname.Value,
+		partyTwittername: i.PartyTwittername.Value,
 	}
 
+	// Sometimes the first name/last name is missing, so we try to infer it from other information
 	if p.FirstName == "" && p.LastName != "" {
 		p.FirstName = strings.TrimSpace(strings.TrimSuffix(p.Name, p.LastName))
 	}
 	if p.LastName == "" && p.FirstName != "" {
 		p.LastName = strings.TrimSpace(strings.TrimPrefix(p.Name, p.FirstName))
+	}
+	if p.FirstName == "" && p.LastName == "" {
+		if f := strings.Fields(p.Name); len(f) == 2 {
+			p.FirstName, p.LastName = f[0], f[1]
+		}
 	}
 
 	return p

@@ -1,5 +1,7 @@
 package wikidata
 
+import "strings"
+
 type Politician struct {
 	Name string
 
@@ -7,6 +9,21 @@ type Politician struct {
 
 	WikiPageTitle  string
 	WikiArticleURL string
+
+	partyHashtag, partyShortname, partyTwittername string
+}
+
+// PartyShortname could be empty. It will not include the '#' at the front
+func (p *Politician) PartyShortname() string {
+	if p.partyHashtag != "" {
+		return strings.TrimPrefix(p.partyHashtag, "#")
+	}
+
+	if p.partyTwittername != "" {
+		return p.partyTwittername
+	}
+
+	return p.partyShortname
 }
 
 type PoliticianStore struct {
