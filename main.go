@@ -111,7 +111,7 @@ func main() {
 		var replyID int64
 		if li := lastTweetInfo[edit.Title]; time.Since(li.Time) < 2*time.Hour {
 			replyID = li.TweetID
-			tweetText = fmt.Sprintf("Noch eine Änderung bei %s\n%s", nameText, diffURL)
+			tweetText = fmt.Sprintf("Noch eine Änderung bei %s%s\n%s", nameText, partyText, diffURL)
 		}
 
 		t, _, err := client.Statuses.Update(tweetText, &twitter.StatusUpdateParams{
