@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"log"
 	"time"
-	"x/bot"
-	"x/config"
-	"x/screenshot"
-	"x/util"
-	"x/wikidata"
-	"x/wikipedia"
+
+	"github.com/xarantolus/poliwiki/bot"
+	"github.com/xarantolus/poliwiki/config"
+	"github.com/xarantolus/poliwiki/screenshot"
+	"github.com/xarantolus/poliwiki/util"
+	"github.com/xarantolus/poliwiki/wikidata"
+	"github.com/xarantolus/poliwiki/wikipedia"
 
 	"github.com/dghubble/go-twitter/twitter"
 )

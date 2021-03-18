@@ -1,7 +1,7 @@
 package bot
 
 import (
-	"x/config"
+	"github.com/xarantolus/poliwiki/config"
 
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
