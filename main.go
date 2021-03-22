@@ -56,7 +56,7 @@ func main() {
 	var lastTweetInfo = make(map[string]lastInfo)
 
 	for edit := range events {
-		fmt.Printf("%#v\n", edit)
+		log.Printf("%#v\n", edit)
 
 		poli, ok := poliStore.Get(edit.Title)
 		if !ok {
@@ -129,6 +129,6 @@ func main() {
 			Time:    time.Now(),
 		}
 
-		fmt.Printf("Tweeted https://twitter.com/%s/status/%s\n", user.ScreenName, t.IDStr)
+		log.Printf("Tweeted https://twitter.com/%s/status/%s\n", user.ScreenName, t.IDStr)
 	}
 }
