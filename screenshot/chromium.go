@@ -47,7 +47,8 @@ document.adoptedStyleSheets = [sheet];
 func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 	return chromedp.Tasks{
 		// If the viewport height is too small, the lower part of the page is cut off
-		chromedp.EmulateViewport(1800, 1080*4),
+		// So now we just take the maximum image height twitter allows
+		chromedp.EmulateViewport(1800, 8192),
 		chromedp.Navigate(urlstr),
 
 		// Cannot pass nil, but we won't use the returned value
