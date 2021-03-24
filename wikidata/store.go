@@ -15,6 +15,8 @@ type Politician struct {
 
 // PartyShortname could be empty. It will not include the '#' at the front
 func (p *Politician) PartyShortname() string {
+	return ""
+
 	if p.partyHashtag != "" {
 		return strings.TrimPrefix(p.partyHashtag, "#")
 	}
