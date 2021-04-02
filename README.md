@@ -6,7 +6,7 @@
 Im Moment postet der Bot nur Änderungen, bei denen sich die Länge des Wikipedia-Eintrags um 50 oder mehr Zeichen ändert. Dabei ist es möglich, dass große Änderungen, nach denen die Länge ungefähr gleich ist, ignoriert werden.
 
 #### Wie werden Seiten von Politiker gefunden?
-Politiker sind im Sinne des Bots alle WikiData-Objekte, die eine [abgeordnetenwach.de id](https://www.wikidata.org/wiki/Property:P5355) haben.
+Politiker sind im Sinne des Bots alle WikiData-Objekte, die eine [abgeordnetenwatch.de id](https://www.wikidata.org/wiki/Property:P5355) haben.
 
 #### Wie werden Änderungen gefunden?
 Wikimedia stellt einen [Stream für Änderungen](https://wikitech.wikimedia.org/wiki/Event_Platform/EventStreams) bereit. Dieser wird vom Bot so gefiltert, dass nur noch Änderungen am deutschen Wikipedia, die nicht von Bots gemacht wurden, betrachtet werden.
