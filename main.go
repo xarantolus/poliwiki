@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -77,7 +78,11 @@ func main() {
 		log.Println("Taking screenshot of", diffURL)
 		png, err := screenshot.Take(diffURL)
 		if err != nil {
-			log.Printf("Error while taking screenshot: %s\n", err.Error())
+			if !errors.Is(err, screenshot.ErrNotInteresting) {
+				log.Println("Seems like no interesting change was made")
+			} else {
+				log.Printf("Error while taking screenshot: %s\n", err.Error())
+			}
 			continue
 		}
 

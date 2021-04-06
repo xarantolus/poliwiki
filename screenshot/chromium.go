@@ -2,8 +2,11 @@ package screenshot
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
 	"math"
+	"strconv"
 	"time"
 
 	"github.com/chromedp/cdproto/cdp"
@@ -12,6 +15,8 @@ import (
 	"github.com/chromedp/cdproto/runtime"
 	"github.com/chromedp/chromedp"
 )
+
+var ErrNotInteresting = errors.New("this change is not interesting")
 
 func Take(webpage string) (pngData []byte, err error) {
 	ctx, c := context.WithTimeout(context.Background(), 5*time.Minute)
@@ -35,6 +40,12 @@ func Take(webpage string) (pngData []byte, err error) {
 	return
 }
 
+const jsCountInteresting = `
+    var changes = [...document.querySelectorAll(".diff-addedline"), ...document.querySelectorAll(".diff-deletedline"), ...document.querySelectorAll(".diffchange-inline")]
+
+	changes.map(x => x.innerText.trim().startsWith("[[") ? 0 : 1).reduce((a, b) => a+b);
+`
+
 // This JS snippet creates a css style that censors the user name text
 const jsCensorUser = `const sheet = new CSSStyleSheet();
 sheet.replaceSync(".censored{color: #000 !important;background: #000 !important;}");
@@ -45,14 +56,30 @@ document.adoptedStyleSheets = [sheet];
 
 // see https://github.com/chromedp/examples/blob/master/screenshot/main.go
 func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
+	var interestingCount []byte
+
 	return chromedp.Tasks{
 		// If the viewport height is too small, the lower part of the page is cut off
 		// So now we just take the maximum image height twitter allows
 		chromedp.EmulateViewport(1800, 8192),
 		chromedp.Navigate(urlstr),
 
+		chromedp.Evaluate(jsCountInteresting, &interestingCount),
+		chromedp.ActionFunc(func(ctx context.Context) (err error) {
+			c, err := strconv.Atoi(string(interestingCount))
+			if err != nil {
+				log.Println("invalid number format when parsing interestingCount:", err.Error())
+			}
+
+			if c == 0 {
+				return ErrNotInteresting
+			}
+
+			return nil
+		}),
 		// Cannot pass nil, but we won't use the returned value
 		chromedp.Evaluate(jsCensorUser, &[]byte{}),
+
 		// This next is basically a copy of the source code of chromedp.Screenshot, except that the scale
 		// is set to 2 so the text resolution is higher
 		chromedp.QueryAfter(sel, func(ctx context.Context, execCtx runtime.ExecutionContextID, nodes ...*cdp.Node) error {
@@ -80,7 +107,7 @@ func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 					Y:      math.Round(box.Margin[1]),
 					Width:  float64(box.Width),
 					Height: float64(box.Height),
-					Scale:  2,
+					Scale:  1.25,
 				}).Do(ctx)
 			if err != nil {
 				return err
