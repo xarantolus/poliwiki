@@ -43,7 +43,7 @@ func Take(webpage string) (pngData []byte, err error) {
 const jsCountInteresting = `
     var changes = [...document.querySelectorAll(".diff-addedline"), ...document.querySelectorAll(".diff-deletedline"), ...document.querySelectorAll(".diffchange-inline")]
 
-	changes.map(x => x.innerText.trim().startsWith("[[") ? 0 : 1).reduce((a, b) => a+b);
+	changes.map(x => (x.innerText.trim().startsWith("[[") || x.innerText.trim().length <= 10) ? 0 : 1).reduce((a, b) => a+b);
 `
 
 // This JS snippet creates a css style that censors the user name text
@@ -64,6 +64,9 @@ func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 		chromedp.EmulateViewport(1800, 8192),
 		chromedp.Navigate(urlstr),
 
+		// Now count the number of interesting changes. Changes are interesting, if they are **not** changes
+		// to metadata. Changes to metadata typically start with "[[", as that's part of the Wiki syntax
+		// We return an error if no objects are interesting
 		chromedp.Evaluate(jsCountInteresting, &interestingCount),
 		chromedp.ActionFunc(func(ctx context.Context) (err error) {
 			c, err := strconv.Atoi(string(interestingCount))
