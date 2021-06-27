@@ -40,13 +40,15 @@ func Take(webpage string) (pngData []byte, err error) {
 	return
 }
 
+// This snippet counts the number of "interesting" changes on a wiki diff page, e.g.
+// it filters out very small changes and changes to metadata (e.g. link lists)
 const jsCountInteresting = `
     var changes = [...document.querySelectorAll(".diff-addedline"), ...document.querySelectorAll(".diff-deletedline"), ...document.querySelectorAll(".diffchange-inline")]
 
 	changes.map(x => (x.innerText.trim().startsWith("[[") || x.innerText.trim().length <= 10) ? 0 : 1).reduce((a, b) => a+b);
 `
 
-// This JS snippet creates a css style that censors the user name text
+// This JS snippet creates a css style that censors the user name text.
 const jsCensorUser = `const sheet = new CSSStyleSheet();
 sheet.replaceSync(".censored{color: #000 !important;background: #000 !important;}");
 document.adoptedStyleSheets = [sheet];
@@ -71,7 +73,7 @@ func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 		chromedp.ActionFunc(func(ctx context.Context) (err error) {
 			c, err := strconv.Atoi(string(interestingCount))
 			if err != nil {
-				log.Println("invalid number format when parsing interestingCount:", err.Error())
+				log.Printf("invalid number format while parsing interestingCount (%q): %s\n", interestingCount, err.Error())
 			}
 
 			if c == 0 {
@@ -80,6 +82,7 @@ func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 
 			return nil
 		}),
+
 		// Cannot pass nil, but we won't use the returned value
 		chromedp.Evaluate(jsCensorUser, &[]byte{}),
 
