@@ -5,7 +5,7 @@
 #### Was ist interessant?
 Im Moment postet der Bot nur Änderungen, bei denen sich die Länge des Wikipedia-Eintrags um 50 oder mehr Zeichen ändert. Dabei ist es möglich, dass große Änderungen, nach denen die Länge ungefähr gleich ist, ignoriert werden.
 
-#### Wie werden Seiten von Politiker gefunden?
+#### Wie werden Seiten von Politikern gefunden?
 Politiker sind im Sinne des Bots alle WikiData-Objekte, die eine [abgeordnetenwatch.de id](https://www.wikidata.org/wiki/Property:P5355) haben.
 
 #### Wie werden Änderungen gefunden?
@@ -13,7 +13,7 @@ Wikimedia stellt einen [Stream für Änderungen](https://wikitech.wikimedia.org/
 
 Dann findet ein Abgleich mit den Titeln der Seiten zu zuvor abgefragten Politiker statt. Wird hier eine Änderung gefunden, wird der Längenunterschied des Artikels betrachtet. 
 
-Mit 50 oder mehr Zeichen Unterschied macht der Bot einen Screenshot der Seite und postet diesen mit Link und Name des Politiker.
+Mit 50 oder mehr Zeichen Unterschied macht der Bot einen Screenshot der Seite und postet diesen mit Link und Name des Politikers.
 
 
 ### Vorschläge & Änderungen
