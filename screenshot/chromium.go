@@ -42,6 +42,7 @@ func Take(webpage string) (pngData []byte, err error) {
 
 // This snippet counts the number of "interesting" changes on a wiki diff page, e.g.
 // it filters out very small changes and changes to metadata (e.g. link lists)
+// TODO: Maybe filter better; only check/count diff-addedline and deletedline if there's no diffchange-inline within it?
 const jsCountInteresting = `
 var changes = [...document.querySelectorAll(".diff-addedline"), ...document.querySelectorAll(".diff-deletedline"), ...document.querySelectorAll(".diffchange-inline")]
 
@@ -76,7 +77,7 @@ func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 		chromedp.ActionFunc(func(ctx context.Context) (err error) {
 			c, err := strconv.Atoi(string(interestingCount))
 			if err != nil {
-				log.Printf("invalid number format while parsing interestingCount (%q): %s\n", interestingCount, err.Error())
+				log.Printf("[Screenshot] error: invalid number format while parsing interestingCount (%q): %s\n", interestingCount, err.Error())
 			}
 
 			if c == 0 {
@@ -90,13 +91,13 @@ func elementScreenshot(urlstr, sel string, res *[]byte) chromedp.Tasks {
 		chromedp.Evaluate(jsCensorUser, &[]byte{}),
 
 		// This next is basically a copy of the source code of chromedp.Screenshot, except that the scale
-		// is set to 2 so the text resolution is higher
+		// is set to 1.25 so the text resolution is higher
 		chromedp.QueryAfter(sel, func(ctx context.Context, execCtx runtime.ExecutionContextID, nodes ...*cdp.Node) error {
 			if len(nodes) < 1 {
 				return fmt.Errorf("selector %q did not return any nodes", sel)
 			}
 
-			// get box model
+			// get box model / ViewPort
 			box, err := dom.GetBoxModel().WithBackendNodeID(nodes[0].BackendNodeID).Do(ctx)
 			if err != nil {
 				return err

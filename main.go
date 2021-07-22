@@ -57,37 +57,38 @@ func main() {
 	var lastTweetInfo = make(map[string]lastInfo)
 
 	for edit := range events {
-		log.Printf("%#v\n", edit)
+		log.Printf("[Edit]: %#v\n", edit)
 
 		poli, ok := poliStore.Get(edit.Title)
 		if !ok {
+			log.Printf("[Skip] Couldn't find %q in poliStore, even though only titles in there should reach this point\n", edit.Title)
 			continue
 		}
 
 		diffURL, ok := edit.DiffURL()
 		if !ok {
-			log.Printf("Couldn't generate diff URL for edit %#v\n", edit)
+			log.Printf("[Skip] Couldn't generate diff URL for edit %#v\n", edit)
 			continue
 		}
 
 		if edit.SizeDifference() < 50 {
-			log.Println("Skipping small edit", diffURL)
+			log.Println("[Skip] Skipping small edit", diffURL)
 			continue
 		}
 
 		png, err := screenshot.Take(diffURL)
 		if err != nil {
 			if errors.Is(err, screenshot.ErrNotInteresting) {
-				log.Printf("Seems like no interesting change was made to %s\n", diffURL)
+				log.Printf("[Skip] Seems like no interesting change was made to %s\n", diffURL)
 			} else {
-				log.Printf("Error while taking screenshot: %s\n", err.Error())
+				log.Printf("[Error] taking screenshot: %s\n", err.Error())
 			}
 			continue
 		}
 
 		media, _, err := client.Media.Upload(png, "image/png")
 		if err != nil {
-			log.Printf("Error while uploading image: %s\n", err.Error())
+			log.Printf("[Error] uploading image: %s\n", err.Error())
 			continue
 		}
 
@@ -100,22 +101,18 @@ func main() {
 		case poli.Name != "":
 			nameText = poli.Name
 		default:
+			log.Printf("[Skip] Couldn't find a name for politician %#v\n", poli)
 			// data doesn't have a name, shouldn't really happen?
 			continue
 		}
 
-		var partyText = poli.PartyShortname()
-		if partyText != "" {
-			partyText = ", " + util.Hashtag(partyText)
-		}
-
-		var tweetText = fmt.Sprintf("Änderung beim Wiki-Eintrag zu %s%s\n%s", nameText, partyText, diffURL)
+		var tweetText = fmt.Sprintf("Änderung beim Wiki-Eintrag zu %s\n%s", nameText, diffURL)
 
 		// If we tweeted about this in the last two hours, add it in a thread
 		var replyID int64
 		if li := lastTweetInfo[edit.Title]; time.Since(li.Time) < 2*time.Hour {
 			replyID = li.TweetID
-			tweetText = fmt.Sprintf("Noch eine Änderung bei %s%s\n%s", nameText, partyText, diffURL)
+			tweetText = fmt.Sprintf("Noch eine Änderung bei %s\n%s", nameText, diffURL)
 		}
 
 		t, _, err := client.Statuses.Update(tweetText, &twitter.StatusUpdateParams{
@@ -123,7 +120,7 @@ func main() {
 			InReplyToStatusID: replyID,
 		})
 		if err != nil {
-			log.Printf("Error while tweeting: %s\n", err.Error())
+			log.Printf("[Error] sending tweet: %s\n", err.Error())
 			continue
 		}
 
@@ -133,6 +130,6 @@ func main() {
 			Time:    time.Now(),
 		}
 
-		log.Printf("Tweeted https://twitter.com/%s/status/%s\n", user.ScreenName, t.IDStr)
+		log.Printf("[Tweet] Posted https://twitter.com/%s/status/%s\n", user.ScreenName, t.IDStr)
 	}
 }
