@@ -43,9 +43,12 @@ func Take(webpage string) (pngData []byte, err error) {
 // This snippet counts the number of "interesting" changes on a wiki diff page, e.g.
 // it filters out very small changes and changes to metadata (e.g. link lists)
 const jsCountInteresting = `
-    var changes = [...document.querySelectorAll(".diff-addedline"), ...document.querySelectorAll(".diff-deletedline"), ...document.querySelectorAll(".diffchange-inline")]
+var changes = [...document.querySelectorAll(".diff-addedline"), ...document.querySelectorAll(".diff-deletedline"), ...document.querySelectorAll(".diffchange-inline")]
 
-	changes.map(x => (x.innerText.trim().startsWith("[[") || x.innerText.trim().length <= 10) ? 0 : 1).reduce((a, b) => a+b);
+changes.map(x => {
+    var change = x.innerText.trim(); 
+    return (change.startsWith("[[") || change.startsWith("*[") || change.startsWith("* [") || change.length <= 10) ? 0 : 1;
+}).reduce((a, b) => a + b);
 `
 
 // This JS snippet creates a css style that censors the user name text.

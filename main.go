@@ -75,11 +75,10 @@ func main() {
 			continue
 		}
 
-		log.Println("Taking screenshot of", diffURL)
 		png, err := screenshot.Take(diffURL)
 		if err != nil {
-			if !errors.Is(err, screenshot.ErrNotInteresting) {
-				log.Println("Seems like no interesting change was made")
+			if errors.Is(err, screenshot.ErrNotInteresting) {
+				log.Printf("Seems like no interesting change was made to %s\n", diffURL)
 			} else {
 				log.Printf("Error while taking screenshot: %s\n", err.Error())
 			}
